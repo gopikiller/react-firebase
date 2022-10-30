@@ -1,19 +1,24 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../providers/AuthProvider';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const navigate = useNavigate();
+    const { signInUser, user } = useAuth();
 
-    const { signInUser } = useAuth();
+    useEffect(() => {
+        if (user) navigate('/dashboard');
+    }, [navigate, user]);
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         try {
-            const user = await signInUser(email, password);
-            console.log(user);
+            const loginUser = await signInUser(email, password);
+            console.log(loginUser);
         } catch (error) {
             console.log(error);
         }

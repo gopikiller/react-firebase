@@ -1,4 +1,4 @@
-import { browserLocalPersistence, createUserWithEmailAndPassword, getAuth, onAuthStateChanged, setPersistence, signInWithEmailAndPassword, signOut, User, UserCredential } from 'firebase/auth';
+import { createUserWithEmailAndPassword, getAuth, onAuthStateChanged, sendEmailVerification, signInWithEmailAndPassword, signOut, User, UserCredential } from 'firebase/auth';
 import React, { FC, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,33 +11,19 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-    const setUserPersistence = useCallback(async () => await setPersistence(auth, browserLocalPersistence), [auth]);
-
-    const onAuthStateChange = useCallback(
-        () =>
-            onAuthStateChanged(auth, authUser => {
-                setUser(authUser);
-                setLoading(false);
-            }),
-        [auth],
-    );
-
     useEffect(() => {
-        onAuthStateChange();
-        return onAuthStateChange();
-    }, [onAuthStateChange]);
+        const unSubscribe = onAuthStateChanged(auth, authUser => {
+            setUser(authUser);
+            setLoading(false);
+        });
+        return unSubscribe;
+    }, [auth]);
 
     useEffect(() => {
         if (!user && !loading) {
             navigate('/login');
-        } else if (!loading) {
-            navigate('/dashboard');
         }
     }, [loading, navigate, user]);
-
-    useEffect(() => {
-        (async () => setUserPersistence())();
-    }, [setUserPersistence, user]);
 
     const createUser = useCallback(
         async (email: string, password: string): Promise<UserCredential> => {
@@ -53,6 +39,12 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
         [auth],
     );
 
+    const sendVerificationEmail = useCallback(async () => {
+        if (auth.currentUser) {
+            await sendEmailVerification(auth.currentUser);
+        }
+    }, [auth.currentUser]);
+
     const signOutUser = useCallback(() => signOut(auth), [auth]);
 
     const authContext = useMemo(
@@ -61,11 +53,12 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
             createUser,
             signInUser,
             signOutUser,
+            sendVerificationEmail,
         }),
-        [createUser, signInUser, signOutUser, user],
+        [createUser, sendVerificationEmail, signInUser, signOutUser, user],
     );
 
-    return <AuthContext.Provider value={authContext}>{children}</AuthContext.Provider>;
+    return <AuthContext.Provider value={authContext}>{!loading ? children : <div>loading...</div>}</AuthContext.Provider>;
 };
 
 export default AuthProvider;
