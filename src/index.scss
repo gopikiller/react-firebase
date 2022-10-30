@@ -6,3 +6,27 @@
     font-family: 'Montserrat', sans-serif;
     font-family: 'Poppins', sans-serif;
 }
+
+.App {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    form {
+        display: flex;
+        flex-direction: column;
+        margin: 2em;
+        gap: 1em;
+        input {
+            padding: 0.5em 0.5em;
+            outline: none;
+            width: 15em;
+        }
+
+        button {
+            padding: 0.5em 0.5em;
+            width: 15em;
+        }
+    }
+}
