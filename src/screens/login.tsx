@@ -13,7 +13,7 @@ const Login = () => {
         if (user) navigate('/dashboard');
     }, [navigate, user]);
 
-    const handleFormSubmit = async (e: React.FormEvent) => {
+    const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         try {
